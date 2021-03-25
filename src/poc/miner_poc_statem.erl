@@ -45,7 +45,7 @@
 -define(SERVER, ?MODULE).
 -define(MINING_TIMEOUT, 30).
 -define(CHALLENGE_RETRY, 3).
--define(RECEIVING_TIMEOUT, 10).
+-define(RECEIVING_TIMEOUT, 60).
 -define(RECEIPTS_TIMEOUT, 10).
 -define(STATE_FILE, "miner_poc_statem.state").
 -define(POC_RESTARTS, 3).
@@ -917,6 +917,9 @@ submit_receipts(#data{address=Challenger,
     lager:info("submitting blockchain_txn_poc_receipts_v1 ~p", [Txn0]),
     TxnRef = make_ref(),
     Self = self(),
+    %% TODO RECEIVING_TIMEOUT should be captured in a proper way, this is an example
+    %% We sleep between 0 and RECEIVING_TIMEOUT - 10 seconds before submitting
+    timer:sleep(timer:seconds(rand:uniform(RECEIVING_TIMEOUT - 10))),
     blockchain_worker:submit_txn(Txn1, fun(Result) -> Self ! {TxnRef, Result} end),
     TxnRef.
 
